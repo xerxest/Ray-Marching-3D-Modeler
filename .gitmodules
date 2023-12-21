@@ -1,0 +1,15 @@
+[submodule "sub_modules/bx"]
+	path = sub_modules/bx
+	url = https://github.com/bkaradzic/bx.git
+[submodule "sub_modules/bimg"]
+	path = sub_modules/bimg
+	url = https://github.com/bkaradzic/bimg.git
+[submodule "sub_modules/bgfx"]
+	path = sub_modules/bgfx
+	url = https://github.com/bkaradzic/bgfx.git
+[submodule "sub_modules/imgui"]
+	path = sub_modules/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "bgfx.cmake"]
+	path = bgfx.cmake
+	url = https://github.com/bkaradzic/bgfx.cmake.git
