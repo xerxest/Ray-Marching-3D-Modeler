@@ -184,6 +184,8 @@ public:
 
 			showExampleDialog(this);
 
+			ImGui::ShowDemoWindow();
+
 			imguiEndFrame();
 			// Set view 0 default viewport.
 			bgfx::setViewRect(0, 0, 0, uint16_t(m_width), uint16_t(m_height) );
@@ -225,20 +227,21 @@ public:
 				, time*0.37f
 				);
 
-			float mtxInv[16];
-			bx::mtxInverse(mtxInv, mtx);
-			float lightDirTime[4];
-			const bx::Vec3 lightDirModelN = bx::normalize(bx::Vec3{-0.4f, -0.5f, -1.0f});
-			bx::store(lightDirTime, bx::mul(lightDirModelN, mtxInv) );
-			lightDirTime[3] = time;
-			bgfx::setUniform(u_lightDirTime, lightDirTime);
+				float mtxInv[16];
+				bx::mtxInverse(mtxInv, mtx);
+				float lightDirTime[4];
+				const bx::Vec3 lightDirModelN = bx::normalize(bx::Vec3{-0.4f, -0.5f, -1.0f});
+				bx::store(lightDirTime, bx::mul(lightDirModelN, mtxInv) );
+				lightDirTime[3] = time;
+				bgfx::setUniform(u_lightDirTime, lightDirTime);
 
-			float mvp[16];
-			bx::mtxMul(mvp, mtx, vp);
+				float mvp[16];
+				bx::mtxMul(mvp, mtx, vp);
 
-			float invMvp[16];
-			bx::mtxInverse(invMvp, mvp);
-			bgfx::setUniform(u_mtx, invMvp);
+				float invMvp[16];
+				bx::mtxInverse(invMvp, mvp);
+				bgfx::setUniform(u_mtx, invMvp);
+
 
 			renderScreenSpaceQuad(1, m_program, 0.0f, 0.0f, 1280.0f, 720.0f);
 

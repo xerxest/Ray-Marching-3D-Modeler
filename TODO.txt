@@ -1,0 +1,26 @@
+To-Do List:
+
+1. Object Organization:
+ Research Object Graph: Study and decide on the best way to organize objects within the scene.
+ Define Object Relationships: Determine the relationships, hierarchies, and connections between different objects in the scene.
+ Implement Object Graph: Develop and implement the object graph structure to manage and organize objects effectively.
+
+ Notes: 
+
+Progres: Research
+
+2. Save and Load System:
+ Design Data Structure: Define the data structure and format for saving and loading objects, properties, and configurations.
+ Develop Save System: Create a system to save the current state, position, orientation, and properties of objects within the scene.
+ Develop Load System: Develop a system to load saved data, restore object states, and recreate the scene configuration.
+
+ Progres: Not Started
+
+3. Basic UI Development:
+ Design UI Mockups: Create mockups, sketches, or wireframes for the basic user interface (UI) elements required to modify objects.
+ Develop UI Components: Implement essential UI components, such as buttons, sliders, input fields, and menus, to allow users to modify object properties.
+ Integrate UI with Object System: Ensure seamless integration between the UI components and the object selection, organization, save, and load systems.
+
+Notes: 
+
+Progres: Research

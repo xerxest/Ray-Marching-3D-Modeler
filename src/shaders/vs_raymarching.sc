@@ -4,6 +4,7 @@ $output v_color0, v_texcoord0
 /*
  * Copyright 2011-2023 Branimir Karadzic. All rights reserved.
  * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
+ shaders/metal/vs_raymarching.bin.
  */
 
 #include "../common/common.sh"
@@ -14,3 +15,4 @@ void main()
 	v_color0 = a_color0;
 	v_texcoord0 = a_texcoord0;
 }
+
