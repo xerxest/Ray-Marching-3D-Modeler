@@ -6,6 +6,7 @@
 #include "common.h"
 #include "bgfx_utils.h"
 #include "imgui/imgui.h"
+#include "viewPortCamera.h"
 
 namespace
 {
@@ -149,12 +150,19 @@ public:
 
 		m_timeOffset = bx::getHPCounter();
 
+		ViewPortCamera::cameraCreate();
+
+		ViewPortCamera::cameraSetPosition({0.0f,2.0f, -20.0f });
+
+		// cameraGetAt({0.0f, 0.0f, 1.0f});
+
 		imguiCreate();
 	}
 
 	int shutdown() override
 	{
 		imguiDestroy();
+		ViewPortCamera::cameraDestroy();
 
 		// Cleanup.
 		bgfx::destroy(m_program);
@@ -172,6 +180,14 @@ public:
 	{
 		if (!entry::processEvents(m_width, m_height, m_debug, m_reset, &m_mouseState) )
 		{
+
+			int64_t now = bx::getHPCounter();
+			static int64_t last = now;
+			const int64_t frameTime = now - last;
+			last = now;
+			const double freq = double(bx::getHPFrequency() );
+			const float deltaTime = float(frameTime/freq);
+
 			imguiBeginFrame(m_mouseState.m_mx
 				,  m_mouseState.m_my
 				, (m_mouseState.m_buttons[entry::MouseButton::Left  ] ? IMGUI_MBUT_LEFT   : 0)
@@ -182,9 +198,33 @@ public:
 				, uint16_t(m_height)
 				);
 
+
+			// if (!m_mouseState.m_buttons[entry::MouseButton::Middle])
+			// {
+
+			// 	ImGui::ShowDemoWindow();
+
+			// }
+
+			// if (!inputGetKeyState(entry::Key::KeyW))
+			// {
+
+			// 	m_camX++;
+
+			// }
+
+
+			// if (!inputGetKeyState(entry::Key::KeyS))
+			// {
+
+			// 	m_camX--;
+
+			// }
+
+			//
+
 			showExampleDialog(this);
 
-			ImGui::ShowDemoWindow();
 
 			imguiEndFrame();
 			// Set view 0 default viewport.
@@ -197,18 +237,18 @@ public:
 			// if no other draw calls are submitted to viewZ 0.
 			bgfx::touch(0);
 
-			const bx::Vec3 at  = { 0.0f, 0.0f,   0.0f };
-			const bx::Vec3 eye = { 0.0f, 0.0f, -15.0f };
+			// const bx::Vec3 at  = { 0.0f, 0.0f,   0.0f };
+			// const bx::Vec3 eye = { 0.0f, 0.0f, -15.0f };
 
-			float view[16];
+			// float view[16];
 			float proj[16];
-			bx::mtxLookAt(view, eye, at);
+			// bx::mtxLookAt(view, eye, at);
 
 			const bgfx::Caps* caps = bgfx::getCaps();
 			bx::mtxProj(proj, 60.0f, float(m_width)/float(m_height), 0.1f, 100.0f, caps->homogeneousDepth);
 
 			// Set view and projection matrix for view 1.
-			bgfx::setViewTransform(0, view, proj);
+			// bgfx::setViewTransform(0, view, proj);
 
 			float ortho[16];
 			bx::mtxOrtho(ortho, 0.0f, 1280.0f, 720.0f, 0.0f, 0.0f, 100.0f, 0.0, caps->homogeneousDepth);
@@ -219,7 +259,12 @@ public:
 			float time = (float)( (bx::getHPCounter()-m_timeOffset)/double(bx::getHPFrequency() ) );
 
 			float vp[16];
-			bx::mtxMul(vp, view, proj);
+			
+			ViewPortCamera::cameraGetViewMtx(m_viewMtx);
+
+			
+
+			bx::mtxMul(vp, m_viewMtx, proj);
 
 			float mtx[16];
 			bx::mtxRotateXY(mtx
@@ -242,6 +287,8 @@ public:
 				bx::mtxInverse(invMvp, mvp);
 				bgfx::setUniform(u_mtx, invMvp);
 
+			ViewPortCamera::cameraUpdate(deltaTime, m_mouseState, ImGui::MouseOverArea() );
+
 
 			renderScreenSpaceQuad(1, m_program, 0.0f, 0.0f, 1280.0f, 720.0f);
 
@@ -255,12 +302,20 @@ public:
 		return false;
 	}
 
+
+	float m_camX = 0;
+	float m_camY = 0;
+	float m_camz = 0;
+
 	entry::MouseState m_mouseState;
+	InputBinding keyPress;
 
 	uint32_t m_width;
 	uint32_t m_height;
 	uint32_t m_debug;
 	uint32_t m_reset;
+
+	float m_viewMtx[16];
 
 	int64_t m_timeOffset;
 	bgfx::UniformHandle u_mtx;

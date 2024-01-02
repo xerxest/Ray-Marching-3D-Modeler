@@ -21,6 +21,6 @@ Progres: Research
  Develop UI Components: Implement essential UI components, such as buttons, sliders, input fields, and menus, to allow users to modify object properties.
  Integrate UI with Object System: Ensure seamless integration between the UI components and the object selection, organization, save, and load systems.
 
-Notes: 
+Notes: How to get mouse/keybord input
 
 Progres: Research
