@@ -7,7 +7,7 @@ $output v_color0, v_texcoord0
  shaders/metal/vs_raymarching.bin.
  */
 
-#include "../common/common.sh"
+#include "../../bgfx.cmake/bgfx/examples/common/common.sh"
 
 void main()
 {

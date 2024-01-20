@@ -3,8 +3,8 @@
 # License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
 #
 
-BGFX_DIR=../..
-RUNTIME_DIR=$(BGFX_DIR)/examples/runtime
-BUILD_DIR=/build
+BGFX_DIR=../../bgfx.cmake
+RUNTIME_DIR=../
+BUILD_DIR=../../build
 
-include bgfx.cmake/bgfx/scripts/shader.mk
+include ../../bgfx.cmake/bgfx/scripts/shader.mk
