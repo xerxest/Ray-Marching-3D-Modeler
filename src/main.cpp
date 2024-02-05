@@ -6,26 +6,13 @@
 #include "common.h"
 #include "bgfx_utils.h"
 #include "imgui/imgui.h"
+#include "entry/cmd.h"
 #include "viewPortCamera.h"
+#include "sdfBuffer.h"
+
 
 namespace
 {
-
-	#define SDF_BOX 0.0
-	#define SDF_SPHERE 1.0
-
-	#define SDF_OPP_FLAG 0.0
-	#define SDF_NODE_FLAG 1.0
-
-	#define SDF_MIN 0.0
-	#define SDF_MAX 1.0
-
-	struct sdfNode
-	{
-		float type;
-		float v1, v2, v3, v4, v5;
-	};
-
 	struct PosColorTexCoord0Vertex
 	{
 		float m_x;
@@ -49,6 +36,16 @@ namespace
 	};
 
 	bgfx::VertexLayout PosColorTexCoord0Vertex::ms_layout;
+
+	int getNumOfVec4(int length)
+	{
+		if (length % 4 == 0)
+		{
+			return length / 4;
+		}
+
+		return (int(length / 4)) + 4;
+	}
 
 	void renderScreenSpaceQuad(uint8_t _view, bgfx::ProgramHandle _program, float _x, float _y, float _width, float _height)
 	{
@@ -143,39 +140,14 @@ namespace
 			init.resolution.reset = m_reset;
 			bgfx::init(init);
 
-			// Test passing SDF to shader program
-			struct sdfNode sdfData[] = {
-				{SDF_BOX, 1.0, 1.0, 1.0, 1.0, 1.0},
-			    {SDF_BOX , 2.0, 1.0, 1.0, 1.0, 1.0}
-			};
+			float pos1[] = {5.0f, 0.0f, 0.0f};
+			float size[] = {1.0f, 1.0f, 1.0f};
+			sdBuffer.appendNode(UDROUNDBOX, pos1, size);
 
-			float oppData[] = {SDF_MIN};
+			float pos2[] = {10.0f, 0.0f, 0.0f};
+			sdBuffer.appendNode(SDSPHERE, pos2, size);
 
-			float postfixData[] = {SDF_NODE_FLAG,SDF_NODE_FLAG,SDF_OPP_FLAG};
-
-			bgfx::UniformHandle sdfDataHandle = bgfx::createUniform("u_sdfData", bgfx::UniformType::Vec4, 4); 
-			bgfx::UniformHandle oppDataHandle = bgfx::createUniform("u_operationData", bgfx::UniformType::Vec4, 1);  
-			bgfx::UniformHandle postFixHandle = bgfx::createUniform("u_postfixData", bgfx::UniformType::Vec4, 1); 
-
-			// Set the uniform values by passing the array of floats
-
-			// convert SDF array to float array 
-			float sdfVecArr[4 * 4];
-			int vecCount = 0;
-
-			for(struct sdfNode node: sdfData)
-			{
-				sdfVecArr[vecCount++] = node.type; 
-				sdfVecArr[vecCount++] = node.v1;
-				sdfVecArr[vecCount++] = node.v2; 
-				sdfVecArr[vecCount++] = node.v3;
-				sdfVecArr[vecCount++] = node.v4;
-				sdfVecArr[vecCount++] = node.v5;
-			}
-
-			bgfx::setUniform(sdfDataHandle, sdfVecArr);
-			bgfx::setUniform(oppDataHandle, oppData);
-			bgfx::setUniform(postFixHandle, postfixData);
+			sdBuffer.addOperation(OPUNION);
 
 			// Enable debug text.
 			bgfx::setDebug(m_debug);
@@ -189,7 +161,10 @@ namespace
 			u_mtx = bgfx::createUniform("u_mtx", bgfx::UniformType::Mat4);
 			u_lightDirTime = bgfx::createUniform("u_lightDirTime", bgfx::UniformType::Vec4);
 			u_size = bgfx::createUniform("u_size", bgfx::UniformType::Vec4);
-
+			sdBuffer.initUniforms();
+			sdBuffer.setBuffers();
+			sdBuffer.writeToHeader();
+			sdBuffer.recompileShader();
 			// Create program from shaders.
 			m_program = loadProgram("vs_raymarching", "fs_raymarching");
 
@@ -234,17 +209,25 @@ namespace
 				imguiBeginFrame(m_mouseState.m_mx, m_mouseState.m_my, (m_mouseState.m_buttons[entry::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0) | (m_mouseState.m_buttons[entry::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0) | (m_mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0), m_mouseState.m_mz, uint16_t(m_width), uint16_t(m_height));
 
 				showExampleDialog(this);
-
-				static float f1 = 1.00f;
-            	ImGui::DragFloat("Size test", &f1, 0.005f);
-
-				sizeTest[0] = f1;
-				sizeTest[1] = f1;
-				sizeTest[2] = f1;
-
-				bgfx::setUniform(u_size, sizeTest);
-
 				ImGui::ShowDemoWindow();
+
+				if (ImGui::Button("Test Add Box"))
+				{
+
+					float pos1[] = {5.0f, 5.0f, 0.0f};
+					float size[] = {1.0f, 1.0f, 1.0f};
+					sdBuffer.appendNode(UDROUNDBOX, pos1, size);
+					sdBuffer.addOperation(OPUNION);
+					sdBuffer.setBuffers();
+					sdBuffer.writeToHeader();
+
+					// Reload the shader insead of the whole application 
+					// Have to create new shader program in this file
+					sdBuffer.recompileShader();
+					std::cout << "loading shader" << std::endl;
+					m_program = loadProgram("vs_raymarching", "fs_raymarching");
+					std::cout << "after shader" << std::endl;
+				}
 
 				imguiEndFrame();
 				// Set view 0 default viewport.
@@ -304,17 +287,24 @@ namespace
 
 				ViewPortCamera::cameraUpdate(deltaTime, m_mouseState, ImGui::MouseOverArea());
 
+				std::cout << "Before Xerg" << std::endl;
+
+
 				renderScreenSpaceQuad(1, m_program, 0.0f, 0.0f, 1280.0f, 720.0f);
+
 
 				// Advance to next frame. Rendering thread will be kicked to
 				// process submitted rendering primitives.
 				bgfx::frame();
 
+				std::cout << "after Xerg" << std::endl;
 				return true;
 			}
 
 			return false;
 		}
+
+		sdfBuffer sdBuffer;
 
 		float m_camX = 0;
 		float m_camY = 0;
@@ -331,8 +321,7 @@ namespace
 		float m_viewMtx[16];
 		bgfx::UniformHandle u_size;
 
-		float posData[4*2];
-		float sizeTest[4];
+		float posData[4 * 2];
 
 		int64_t m_timeOffset;
 		bgfx::UniformHandle u_mtx;
