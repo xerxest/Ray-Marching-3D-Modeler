@@ -8,8 +8,10 @@
 #include "imgui/imgui.h"
 #include "entry/cmd.h"
 #include "viewPortCamera.h"
-#include "sdfBuffer.h"
-
+#include "ShaderBuilder.h"
+#include "UI/ToolBar.h"
+#include "UI/TreeView.h"
+#include "SDFTree.h"
 
 namespace
 {
@@ -118,6 +120,7 @@ namespace
 		ExampleRaymarch(const char *_name, const char *_description, const char *_url)
 			: entry::AppI(_name, _description, _url)
 		{
+
 		}
 
 		void init(int32_t _argc, const char *const *_argv, uint32_t _width, uint32_t _height) override
@@ -140,15 +143,7 @@ namespace
 			init.resolution.reset = m_reset;
 			bgfx::init(init);
 
-			float pos1[] = {5.0f, 0.0f, 0.0f};
-			float size[] = {1.0f, 1.0f, 1.0f};
-			sdBuffer.appendNode(UDROUNDBOX, pos1, size);
-
-			float pos2[] = {10.0f, 0.0f, 0.0f};
-			sdBuffer.appendNode(SDSPHERE, pos2, size);
-
-			sdBuffer.addOperation(OPUNION);
-
+			shaderBuilder.createDebugScene(scence);
 			// Enable debug text.
 			bgfx::setDebug(m_debug);
 
@@ -161,11 +156,16 @@ namespace
 			u_mtx = bgfx::createUniform("u_mtx", bgfx::UniformType::Mat4);
 			u_lightDirTime = bgfx::createUniform("u_lightDirTime", bgfx::UniformType::Vec4);
 			u_size = bgfx::createUniform("u_size", bgfx::UniformType::Vec4);
-			sdBuffer.initUniforms();
-			sdBuffer.setBuffers();
-			sdBuffer.writeToHeader();
-			sdBuffer.recompileShader();
 			// Create program from shaders.
+
+			u_params_test = bgfx::createUniform("u_params_test", bgfx::UniformType::Vec4, 6);
+			bgfx::setUniform(u_params_test,test_buffer,6);
+
+			bgfx::UniformInfo test_info;
+
+			bgfx::getUniformInfo(u_params_test,test_info);
+
+
 			m_program = loadProgram("vs_raymarching", "fs_raymarching");
 
 			m_timeOffset = bx::getHPCounter();
@@ -187,9 +187,12 @@ namespace
 
 			bgfx::destroy(u_mtx);
 			bgfx::destroy(u_lightDirTime);
+			bgfx::destroy(u_params_test);
 
 			// Shutdown bgfx.
 			bgfx::shutdown();
+
+			delete(treeView);
 
 			return 0;
 		}
@@ -211,23 +214,10 @@ namespace
 				showExampleDialog(this);
 				ImGui::ShowDemoWindow();
 
-				if (ImGui::Button("Test Add Box"))
-				{
+				// UI 
 
-					float pos1[] = {5.0f, 5.0f, 0.0f};
-					float size[] = {1.0f, 1.0f, 1.0f};
-					sdBuffer.appendNode(UDROUNDBOX, pos1, size);
-					sdBuffer.addOperation(OPUNION);
-					sdBuffer.setBuffers();
-					sdBuffer.writeToHeader();
-
-					// Reload the shader insead of the whole application 
-					// Have to create new shader program in this file
-					sdBuffer.recompileShader();
-					std::cout << "loading shader" << std::endl;
-					m_program = loadProgram("vs_raymarching", "fs_raymarching");
-					std::cout << "after shader" << std::endl;
-				}
+				toolBar.OnImGuiRender();
+				treeView->OnImGuiRender();
 
 				imguiEndFrame();
 				// Set view 0 default viewport.
@@ -277,6 +267,7 @@ namespace
 				bx::store(lightDirTime, bx::mul(lightDirModelN, mtxInv));
 				lightDirTime[3] = time;
 				bgfx::setUniform(u_lightDirTime, lightDirTime);
+				bgfx::setUniform(u_params_test,test_buffer,6);
 
 				float mvp[16];
 				bx::mtxMul(mvp, mtx, vp);
@@ -284,27 +275,21 @@ namespace
 				float invMvp[16];
 				bx::mtxInverse(invMvp, mvp);
 				bgfx::setUniform(u_mtx, invMvp);
+				shaderBuilder.setUniforms();
+
 
 				ViewPortCamera::cameraUpdate(deltaTime, m_mouseState, ImGui::MouseOverArea());
 
-				std::cout << "Before Xerg" << std::endl;
-
-
 				renderScreenSpaceQuad(1, m_program, 0.0f, 0.0f, 1280.0f, 720.0f);
-
 
 				// Advance to next frame. Rendering thread will be kicked to
 				// process submitted rendering primitives.
 				bgfx::frame();
-
-				std::cout << "after Xerg" << std::endl;
 				return true;
 			}
 
 			return false;
 		}
-
-		sdfBuffer sdBuffer;
 
 		float m_camX = 0;
 		float m_camY = 0;
@@ -327,6 +312,14 @@ namespace
 		bgfx::UniformHandle u_mtx;
 		bgfx::UniformHandle u_lightDirTime;
 		bgfx::ProgramHandle m_program;
+		bgfx::UniformHandle u_params_test;
+		float test_buffer [6*4];
+		ShaderBuilder shaderBuilder;
+		SDFTree scence;
+
+		// UI
+		ToolBar toolBar;
+		TreeView *treeView = new TreeView(&scence);
 	};
 
 } // namespace

@@ -1,12 +1,7 @@
-#include "sdfDefinitions.h"
-// #include "../../build/RuntimeSDFData.sh"
+// #include "sdfDefinitions.h"
+#include "../../build/RuntimeSDFData.sh"
 
-const vec4 u_SD_type[] = {vec4(1,-1,-1,-1),vec4(0,-1,-1,-1),vec4(1,-1,-1,-1),}; 
-const vec4 u_SD_position[] = {vec4(5,0,0,-1),vec4(10,0,0,-1),vec4(5,5,0,-1),}; 
-const vec4 u_SD_size[] = {vec4(1,1,1,-1),vec4(1,1,1,-1),vec4(1,1,1,-1),}; 
-const vec4 u_opps[] = {vec4(9,-1,-1,-1),vec4(9,-1,-1,-1),}; 
-const vec4 u_postFix[] = {vec4(13,-1,-1,-1),vec4(13,-1,-1,-1),vec4(12,-1,-1,-1),vec4(13,-1,-1,-1),vec4(12,-1,-1,-1),}; 
-const int postFixLength = 5;
+uniform vec4 u_params_test[6]; 
 
 #define MAX_STACK_SIZE 100
 
@@ -42,51 +37,6 @@ float pop(inout Stack stack) {
 
 float sceneDist(vec3 _pos)
 {
-	int sdfNodeIndex = 0;
-	int oppNodeIndex = 0;
-	struct Stack sdfStack;
-	initStack(sdfStack);
-
-// Only works if the length is odd
-	for (int i = 0; i < 2; i++)
-	{
-
-		if(u_postFix[i].x == SDNODE_TYPE) 
-		{
-
-			float newDist = -1;
-
-			if(u_SD_type[sdfNodeIndex].x == SDSPHERE)
-			{
-				newDist = sdSphere(_pos + u_SD_position[sdfNodeIndex].xyz, 
-				1.0);
-			}
-
-			if(u_SD_type[sdfNodeIndex].x == UDROUNDBOX)
-			{
-				newDist = udRoundBox(
-				_pos + u_SD_position[sdfNodeIndex].xyz,
-				vec3 (1.0,1.0,1.0)
-				,0.5);
-			}
-			
-			push(sdfStack,newDist);
-			sdfNodeIndex++;
-		}
-		else if (u_postFix[i].x == OPP_TYPE)
-		{
-			// TODO use opp 
-			float d1 , d2;
-
-			d1 = pop(sdfStack);
-			d2 = pop(sdfStack);
-
-			push(sdfStack,min(d1,d2));
-
-		}
-
-	}
-	
-	return pop(sdfStack);
-
+	// import GLSL generated from SDF Nodes
+	return RootDist(_pos);
 }

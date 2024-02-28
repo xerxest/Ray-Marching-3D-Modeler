@@ -22,5 +22,3 @@ struct SDF_Node
     float positon[3];
     float size[3];
 };
-
-
