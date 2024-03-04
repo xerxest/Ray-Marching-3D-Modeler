@@ -59,7 +59,7 @@ void ShaderBuilder::createUniform()
     int bufferIndex = 0;
     int smoothBufferIndex = 0;
 
-    sdQueue.push(m_rootPtr->child(0));
+    sdQueue.push(m_rootPtr->child(0).get());
 
     while (!sdQueue.empty())
     {
@@ -68,7 +68,7 @@ void ShaderBuilder::createUniform()
         int childIndex = 0;
         while (childIndex < currPtr->childCount())
         {
-            sdQueue.push(currPtr->child(childIndex));
+            sdQueue.push(currPtr->child(childIndex).get());
             childIndex++;
         }
 
@@ -114,8 +114,8 @@ void ShaderBuilder::createUniform()
 
 void ShaderBuilder::createDebugScene()
 {
-    SDFNode *node1 = new SDFNode();
-    SDFNode *node2 = new SDFNode();
+    auto node1 = std::make_shared<SDFNode>();
+    auto node2 = std::make_shared<SDFNode>();
 
     m_rootPtr->setName("Root");
 
@@ -125,16 +125,15 @@ void ShaderBuilder::createDebugScene()
     node2->setNodeType(ShaderConfig::SDFType::sdSphere);
     node2->setName("Test Sphere");
 
-    node1->setPostiton(1.0f, 1.0f, 1.0f);
+    node1->setPosition(1.0f, 1.0f, 1.0f);
     node1->setShape(2.0f, 1.0f, 1.0f);
 
-    node2->setPostiton(4.0f, 1.0f, 0.0f);
+    node2->setPosition(4.0f, 1.0f, 0.0f);
     node2->setShape(1.0f, -1.0f, -1.0f);
 
-    OperationNode *opp = new OperationNode();
+    auto opp = std::make_shared<OperationNode>();
 
     opp->setName("opUnion");
-
     opp->setOperation(ShaderConfig::OperationType::opUnion);
 
     opp->addChild(node1);
@@ -143,9 +142,7 @@ void ShaderBuilder::createDebugScene()
     m_rootPtr->addChild(opp);
 
     createUniform();
-
     writeNewShader(ShaderConfig::sceneShaderName);
-
     setUniforms();
 }
 
@@ -153,9 +150,17 @@ void ShaderBuilder::compileShader()
 {
     const std::filesystem::path m_shaderPath(ShaderConfig::shaderBuildPath);
 
-    // TODO mutli plafrom
-
+#if defined(_WIN32) || defined(_WIN64)
+    const char *command = "make TARGET=0;";
+#elif defined(__APPLE__) || defined(__MACH__)
     const char *command = "make TARGET=5;";
+#elif defined(__linux__)
+    const char *command = "make TARGET=4;";
+#elif defined(__unix__)
+    const char *command = "make TARGET=4;";
+#else
+    const char *command = "make TARGET=4;";
+#endif
 
     std::filesystem::current_path(m_shaderPath);
 
@@ -176,13 +181,13 @@ void ShaderBuilder::compileShader()
     }
 }
 
-void ShaderBuilder::setNodeUniforms(SDFTree *node)
+void ShaderBuilder::setNodeUniforms(std::shared_ptr<SDFTree> node)
 {
     if (!node->isRoot() && !m_shaderReCompFlag)
     {
         if (node->getType() == SDFTree::SDFNodeType)
         {
-            SDFNode *nodePtr = static_cast<SDFNode *>(node);
+            SDFNode *nodePtr = static_cast<SDFNode *>(node.get());
 
             size_t index = nodePtr->m_bufferIndex * 4;
 
@@ -198,7 +203,7 @@ void ShaderBuilder::setNodeUniforms(SDFTree *node)
         }
         else
         {
-            OperationNode *oppPtr = static_cast<OperationNode *>(node);
+            OperationNode *oppPtr = static_cast<OperationNode *>(node.get());
             ShaderConfig::OperationType currType = oppPtr->getOperationType();
             if (currType == ShaderConfig::opSmoothUnion || currType == ShaderConfig::opSmoothSubtraction || currType == ShaderConfig::opSmoothIntersection)
             {

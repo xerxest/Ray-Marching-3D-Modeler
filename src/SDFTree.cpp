@@ -11,16 +11,26 @@ std::string SDFTree::compileToGlsl() const
 }
 
 
-void SDFTree::addChild(SDFTree *node)
+void SDFTree::addChild(std::shared_ptr<SDFTree> node)
 {   
     node->m_parent = this;
     m_children.push_back(node);
 }
 
+void SDFTree::removeChild(std::shared_ptr<SDFTree> node)
+{
+    auto it = std::find_if(m_children.begin(), m_children.end(), 
+                           [&node](const std::shared_ptr<SDFTree>& child) {
+                               return child == node;
+                           });
+    if (it != m_children.end()) {
+        m_children.erase(it);
+    }
+}
+
 
 std::string SDFNode::compileToGlsl() const
 {   
-    // TODO use uniform Values
     switch (m_nodeType)
     {
     case ShaderConfig::sdSphere:
@@ -113,7 +123,7 @@ std::string OperationNode::compileToGlsl() const
 }
 
 
-SDFTree::SDFTree() : m_parent(nullptr), m_bufferIndex(0), m_numChildren(0) {}
+SDFTree::SDFTree() noexcept : m_parent(nullptr), m_bufferIndex(0), m_numChildren(0) {}
 
 SDFTree::~SDFTree() {
     // Add any necessary cleanup code here

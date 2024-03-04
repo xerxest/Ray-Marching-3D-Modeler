@@ -10,21 +10,33 @@ NodeProperties::~NodeProperties()
 
 void NodeProperties::OnImGuiRender()
 {
-    setStyle();
     ImGui::SetNextWindowPos(ImVec2(m_percentWidth * m_screenWidth, m_percentHeight * m_screenHeight), ImGuiCond_FirstUseEver);
     ImGui::Begin("Node Properties");
     ImGui::SetWindowSize(ImVec2(400, 700));
 
     /* Root Node, Do nothing */
+
+    if(m_selectedNode == nullptr)
+    {
+        std::cout << "Shit" << std::endl;
+    }
+
+    if(!(m_selectedNode == nullptr) && m_selectedNode->isRoot())
+    {
+        std::cout << "Shit" << std::endl;
+    }
+
     if (!(m_selectedNode == nullptr || m_selectedNode->isRoot()))
     {
-        // Name
-        ImGui::Text("%s", m_selectedNode->getName().c_str());
+        char buffer[256];
+        strncpy(buffer, m_selectedNode->getName().c_str(), sizeof(buffer));
+        buffer[sizeof(buffer) - 1] = '\0';
+        ImGui::InputText("##edit", buffer, sizeof(buffer));
+        m_selectedNode->setName(std::string(buffer));
 
-        // Node Type
         if (m_selectedNode->getType() == SDFTree::SDFNodeType)
         {
-            SDFNode *nodePtr = static_cast<SDFNode *>(m_selectedNode);
+            SDFNode *nodePtr = static_cast<SDFNode *>(m_selectedNode.get());
 
             ImGui::SeparatorText("Positions");
             if (ImGui::DragFloat("Pos X", &nodePtr->m_p1, 0.005f))
@@ -64,15 +76,16 @@ void NodeProperties::OnImGuiRender()
         }
         else
         {
-            OperationNode *oppPtr = static_cast<OperationNode *>(m_selectedNode);
+            OperationNode *oppPtr = static_cast<OperationNode *>(m_selectedNode.get());
 
             ImGui::SeparatorText(m_opStrings[oppPtr->getOperationType()]);
 
             ShaderConfig::OperationType currType = oppPtr->getOperationType();
             if (currType == ShaderConfig::opSmoothUnion || currType == ShaderConfig::opSmoothSubtraction || currType == ShaderConfig::opSmoothIntersection)
             {
-                if(ImGui::DragFloat("Smoothness", &oppPtr->m_smoothness, 0.005f, 0.0f))
-                    m_shaderPtr->setNodeUniforms(m_selectedNode);;
+                if (ImGui::DragFloat("Smoothness", &oppPtr->m_smoothness, 0.005f, 0.0f))
+                    m_shaderPtr->setNodeUniforms(m_selectedNode);
+                ;
             }
 
             if (ImGui::BeginListBox("##"))
@@ -91,6 +104,11 @@ void NodeProperties::OnImGuiRender()
                 }
                 ImGui::EndListBox();
             }
+        }
+        ImGui::Dummy(ImVec2(0, 15));
+        if (ImGui::Button(" Delete  "))
+        {
+            
         }
     }
     else

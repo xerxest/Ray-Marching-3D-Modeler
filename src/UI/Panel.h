@@ -27,5 +27,5 @@ public:
 
     static float m_screenWidth;
     static float m_screenHeight;
-    void setStyle();
+    static void setStyle();
 };

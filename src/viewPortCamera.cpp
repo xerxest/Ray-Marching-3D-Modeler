@@ -1,6 +1,6 @@
 #include <bx/timer.h>
 #include <bx/math.h>
-#include "viewPortCamera.h"
+#include "ViewPortCamera.h"
 #include "entry/entry.h"
 #include "entry/cmd.h"
 #include "entry/input.h"

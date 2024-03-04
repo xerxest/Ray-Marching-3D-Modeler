@@ -2,11 +2,11 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../stb/stb_image.h"
 
-void ToolBar::setSelectedNode(SDFTree *node)
+void ToolBar::setSelectedNode(std::shared_ptr<SDFTree> node)
 {
     if (node != nullptr && node->getType() == SDFTree::OperationNodeType)
     {
-        m_selectOpp = static_cast<OperationNode *>(node);
+        m_selectOpp = static_cast<OperationNode *>(node.get());
     }
     else
     {
@@ -51,16 +51,16 @@ void ToolBar::OnImGuiRender()
                 std::cout << "the button was pressed" << std::endl;
                 SDFNode *newNode = new SDFNode();
                 newNode->setName(m_sdStrings[i]);
-                newNode->setPostiton(1.0f, 1.0f, 1.0f);
+                newNode->setPosition(1.0f, 1.0f, 1.0f);
                 newNode->setShape(1.0f, 1.0, 1.0f);
                 newNode->setNodeType(ShaderConfig::SDFType(i));
-                m_selectOpp->addChild(newNode);
+                auto newNodeShared = std::shared_ptr<SDFTree>(newNode);
+                m_selectOpp->addChild(newNodeShared);
                 m_shaderPtr->markForRecompile();
             }
         }
         ImGui::PopID();
     }
-
 
     ImGui::SeparatorText("Add Operations");
 
@@ -73,7 +73,8 @@ void ToolBar::OnImGuiRender()
                 OperationNode *newOpp = new OperationNode();
                 newOpp->setOperation(ShaderConfig::OperationType(i));
                 newOpp->setName(m_opStrings[i]);
-                m_selectOpp->addChild(newOpp);
+                auto newOppShared = std::shared_ptr<SDFTree>(newOpp);
+                m_selectOpp->addChild(newOppShared);
                 m_shaderPtr->markForRecompile();
             }
         }

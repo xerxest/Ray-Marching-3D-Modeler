@@ -22,7 +22,7 @@ public:
     void writeNewShader(std::string dirPath);
     inline void setShaderPath(std::string path) {m_shaderPath = path;}
     void createDebugScene();
-    void setNodeUniforms(SDFTree* node);
+    void setNodeUniforms(std::shared_ptr<SDFTree> node);
     inline void markForRecompile() {m_shaderReCompFlag = true;}
     bool updateScene();
 private:

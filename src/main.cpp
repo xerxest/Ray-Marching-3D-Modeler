@@ -7,12 +7,13 @@
 #include "bgfx_utils.h"
 #include "imgui/imgui.h"
 #include "entry/cmd.h"
-#include "viewPortCamera.h"
+#include "ViewPortCamera.h"
 #include "ShaderBuilder.h"
 #include "UI/Panel.h"
 #include "UI/ToolBar.h"
 #include "UI/TreeView.h"
 #include "UI/NodeProperties.h"
+#include "UI/Help.h"
 #include "SDFTree.h"
 
 namespace
@@ -116,10 +117,10 @@ namespace
 		}
 	}
 
-	class ExampleRaymarch : public entry::AppI
+	class RayModel : public entry::AppI
 	{
 	public:
-		ExampleRaymarch(const char *_name, const char *_description, const char *_url)
+		RayModel(const char *_name, const char *_description, const char *_url)
 			: entry::AppI(_name, _description, _url)
 		{
 		}
@@ -146,7 +147,7 @@ namespace
 
 			Panel::m_screenWidth = m_width;
 			Panel::m_screenHeight = m_height;
-			
+
 			shaderBuilder->createDebugScene();
 			nodeProperties.setShader(shaderBuilder);
 			toolBar.setShader(shaderBuilder);
@@ -165,11 +166,6 @@ namespace
 
 			u_mtx = bgfx::createUniform("u_mtx", bgfx::UniformType::Mat4);
 			u_lightDirTime = bgfx::createUniform("u_lightDirTime", bgfx::UniformType::Vec4);
-			// u_size = bgfx::createUniform("u_size", bgfx::UniformType::Vec4);
-			// Create program from shaders.
-
-			u_params_test = bgfx::createUniform("u_params_test", bgfx::UniformType::Vec4, 6);
-			bgfx::setUniform(u_params_test, test_buffer, 6);
 
 			bgfx::UniformInfo test_info;
 
@@ -183,7 +179,7 @@ namespace
 			ViewPortCamera::cameraSetPosition({-9.2916f, -6.87753f, -9.2916f});
 
 			imguiCreate();
-
+			Panel::setStyle();
 		}
 
 		int shutdown() override
@@ -210,6 +206,11 @@ namespace
 		{
 			if (!entry::processEvents(m_width, m_height, m_debug, m_reset, &m_mouseState))
 			{
+				ImGuiIO &io = ImGui::GetIO();
+				const auto *data = inputGetChar();
+				const auto character = data != nullptr ? 0u [data] : 0u;
+				io.AddInputCharacter(character);
+				io.AddKeyEvent(ImGuiKey_Backspace,(character == 127));
 
 				int64_t now = bx::getHPCounter();
 				static int64_t last = now;
@@ -229,11 +230,15 @@ namespace
 				// UI
 				treeView->OnImGuiRender();
 
+				// toolBar.setSelectedNode(std::make_shared<SDFTree>(treeView->getSelectedNode()));
 				toolBar.setSelectedNode(treeView->getSelectedNode());
 				toolBar.OnImGuiRender();
 
+				// nodeProperties.setSelected(std::make_shared<SDFTree>(treeView->getSelectedNode()));
 				nodeProperties.setSelected(treeView->getSelectedNode());
 				nodeProperties.OnImGuiRender();
+
+				helpMenu.OnImGuiRender();
 
 				imguiEndFrame();
 				// Set view 0 default viewport.
@@ -246,15 +251,9 @@ namespace
 				// if no other draw calls are submitted to viewZ 0.
 				bgfx::touch(0);
 
-				// float view[16];
 				float proj[16];
-				// bx::mtxLookAt(view, eye, at);
-
 				const bgfx::Caps *caps = bgfx::getCaps();
 				bx::mtxProj(proj, 60.0f, float(m_width) / float(m_height), 0.1f, 100.0f, caps->homogeneousDepth);
-
-				// Set view and projection matrix for view 1.
-				// bgfx::setViewTransform(0, view, proj);
 
 				float ortho[16];
 				bx::mtxOrtho(ortho, 0.0f, 1280.0f, 720.0f, 0.0f, 0.0f, 100.0f, 0.0, caps->homogeneousDepth);
@@ -270,20 +269,12 @@ namespace
 
 				bx::mtxMul(vp, m_viewMtx, proj);
 
-				// float mtx[16];
-				// bx::mtxRotateXY(mtx, time, time * 0.37f);
-
-				// float mtxInv[16];
-				// bx::mtxInverse(mtxInv, mtx);
 				float lightDirTime[4];
 				const bx::Vec3 lightDirModelN = bx::normalize(bx::Vec3{-0.4f, -0.5f, -1.0f});
 				bx::store(lightDirTime, lightDirModelN);
 				lightDirTime[3] = 1.0f;
 				bgfx::setUniform(u_lightDirTime, lightDirTime);
 				bgfx::setUniform(u_params_test, test_buffer, 6);
-
-				// float mvp[16];
-				// bx::mtxMul(mvp, mtx, vp);
 
 				float invMvp[16];
 				bx::mtxInverse(invMvp, vp);
@@ -334,13 +325,14 @@ namespace
 
 		// UI
 		ToolBar toolBar;
-		TreeView *treeView = new TreeView(&scence);
+		TreeView *treeView = new TreeView(std::make_shared<SDFTree>(scence));
 		NodeProperties nodeProperties;
+		Help helpMenu;
 	};
 
 } // namespace
 
 ENTRY_IMPLEMENT_MAIN(
-	ExampleRaymarch, "03-raymarch", "Updating shader uniforms.", "https://bkaradzic.github.io/bgfx/examples.html#raymarch");
+	RayModel, "RayModel", "", "");
 
 int _main_(int _argc, char **_argv) { return 0; };

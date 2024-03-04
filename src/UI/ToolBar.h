@@ -31,7 +31,7 @@ public:
     ToolBar(/* args */);
     ~ToolBar();
     void OnImGuiRender();
-    void setSelectedNode(SDFTree* node);
+    void setSelectedNode(std::shared_ptr<SDFTree> node);
     bgfx::TextureHandle m_sdfIcons[7];
     inline void setShader(ShaderBuilder* shader) {m_shaderPtr = shader;}
 };

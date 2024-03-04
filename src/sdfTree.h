@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <memory>
 #include "ShaderConfig.h"
 
 
@@ -18,17 +19,15 @@ public:
     };
     
 public:
-    SDFTree(/* args */);
+    SDFTree(/* args */) noexcept;
     ~SDFTree(); 
-    void addChild(SDFTree *node);
-    // void removeChild(int childIndex);
+    void addChild(std::shared_ptr<SDFTree> node);
+    void removeChild(std::shared_ptr<SDFTree> node);
     inline bool isRoot() const {return m_parent == nullptr;}
-    // void setName(std::string name);
-    // virtual int maxChildren() const;
     virtual std::string compileToGlsl() const;
     inline size_t childCount() const { return m_children.size(); }
-    inline SDFTree *child(size_t index) { return m_children.at(index); }
-    inline const SDFTree *child(size_t index) const { return m_children.at(index); }
+    inline std::shared_ptr<SDFTree> child(size_t index) { return m_children.at(index); }
+    inline const std::shared_ptr<SDFTree> child(size_t index) const { return m_children.at(index); }
     inline NodeType getType() const {return m_type;}
     inline void setType(NodeType type) {m_type = type;}
     inline void setName(std::string name) {m_name = name;}
@@ -37,7 +36,7 @@ public:
 
 private:
     SDFTree *m_parent = nullptr;
-    std::vector<SDFTree*> m_children;
+    std::vector<std::shared_ptr<SDFTree>> m_children;
     u_int8_t m_numChildren;
     NodeType m_type;
     std::string m_name;
@@ -51,7 +50,7 @@ class SDFNode: public SDFTree
         virtual std::string compileToGlsl() const override;
         inline ShaderConfig::SDFType getNodeType() const {return m_nodeType;}
         inline void setNodeType(ShaderConfig::SDFType node) {m_nodeType = node;}
-        inline void setPostiton(float pos1, float pos2, float pos3) { m_p1 = pos1; m_p2 = pos2; m_p2 = pos3; }
+        inline void setPosition(float pos1, float pos2, float pos3) { m_p1 = pos1; m_p2 = pos2; m_p2 = pos3; }
         inline void setShape(float f1, float f2, float f3) { m_s1 = f1; m_s2 = f2; m_s3 = f3; }
         
         float m_p1;

@@ -1,6 +1,6 @@
 #include "TreeView.h"
 
-TreeView::TreeView(SDFTree* root)
+TreeView::TreeView(std::shared_ptr<SDFTree> root)
 {
     m_rootScene = root;
 }
@@ -50,7 +50,7 @@ void TreeView::OnImGuiRender()
 
     m_newSelectedNode =  nullptr;
     
-    displayChild(m_rootScene);
+    displayChild(m_rootScene.get());
 
     // Update Selected Node
     if (m_newSelectedNode != nullptr)
@@ -65,7 +65,7 @@ void TreeView::OnImGuiRender()
     ImGui::End();
 }
 
-SDFTree* TreeView::getSelectedNode()
+std::shared_ptr<SDFTree> TreeView::getSelectedNode()
 {
     return m_selectedNode;
 }
