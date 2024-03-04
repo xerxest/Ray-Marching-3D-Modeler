@@ -6,7 +6,8 @@ namespace ShaderConfig
 
     const std::string u_positionName = "u_postions";
     const std::string u_shapeOrSizeName = "u_shapeOrSize";
-
+    const std::string u_smoothValue = "u_smoothValue";
+    
     /*----  SDF Types ----*/ 
 
     enum SDFType
@@ -14,11 +15,8 @@ namespace ShaderConfig
             sdSphere,
             udBox,
             udRoundBox,
-            sdBox,
             sdTorus,
-            sdCylinder,
             sdCone,
-            sdPlane,
             sdHexPrism,
             sdTriPrism
         };
@@ -30,6 +28,9 @@ namespace ShaderConfig
            opUnion,
            opSubtract,
            opIntersect,
+           opSmoothUnion,
+           opSmoothSubtraction,
+           opSmoothIntersection,
         };
 
     /*----  Operation Functions ----*/ 
@@ -48,8 +49,23 @@ namespace ShaderConfig
     {
         return "opIntersect("+leftNode+"," +rightNode+")";
     }
+
+    inline std::string opSmoothUnion_glsl(std::string leftNode, std::string rightNode, int bufferIndex)
+    {
+        return "opSmoothUnion("+leftNode+"," +rightNode+","+u_smoothValue+"["+std::to_string(bufferIndex)+"].x )";
+    }
+
+    inline std::string opSmoothSubtraction_glsl(std::string leftNode, std::string rightNode, int bufferIndex)
+    {
+        return "opSmoothSubtraction("+leftNode+"," +rightNode+","+u_smoothValue+"["+std::to_string(bufferIndex)+"].x )";
+    }
+
+    inline std::string opSmoothIntersection_glsl(std::string leftNode, std::string rightNode, int bufferIndex)
+    {
+        return "opSmoothIntersection("+leftNode+"," +rightNode+","+u_smoothValue+"["+std::to_string(bufferIndex)+"].x )";
+    }
     
-    /*----  SDF Functions ---- TODO */ 
+    /*----  SDF Functions ---- */ 
 
     inline std::string sdSphere_glsl(int index)
     {
@@ -63,47 +79,32 @@ namespace ShaderConfig
 
     inline std::string udRoundBox_glsl(int index)
     {
-        return "udBox(_pos + u_postions["+std::to_string(index)+"].xyz,u_shapeOrSize["+std::to_string(index)+"].xyz)";
+        return "udRoundBox(_pos + u_postions["+std::to_string(index)+"].xyz,u_shapeOrSize["+std::to_string(index)+"].xyz, 1.0)";
     }
-
-    inline std::string sdBox_glsl(int index)
-    {
-        return "udBox(_pos + u_postions["+std::to_string(index)+"].xyz,u_shapeOrSize["+std::to_string(index)+"].xyz)";
-    }
-
+    
     inline std::string sdTorus_glsl(int index)
     {
-        return "udBox(_pos + u_postions["+std::to_string(index)+"].xyz,u_shapeOrSize["+std::to_string(index)+"].xyz)";
-    }
-
-    inline std::string sdCylinder_glsl(int index)
-    {
-        return "udBox(_pos + u_postions["+std::to_string(index)+"].xyz,u_shapeOrSize["+std::to_string(index)+"].xyz)";
+        return "sdTorus(_pos + u_postions["+std::to_string(index)+"].xyz,u_shapeOrSize["+std::to_string(index)+"].xy)";
     }
 
     inline std::string sdCone_glsl(int index)
     {
-        return "udBox(_pos + u_postions["+std::to_string(index)+"].xyz,u_shapeOrSize["+std::to_string(index)+"].xyz)";
-    }
-
-    inline std::string sdPlane_glsl(int index)
-    {
-        return "udBox(_pos + u_postions["+std::to_string(index)+"].xyz,u_shapeOrSize["+std::to_string(index)+"].xyz)";
+        return "sdCone(_pos + u_postions["+std::to_string(index)+"].xyz,u_shapeOrSize["+std::to_string(index)+"].xy, u_shapeOrSize["+std::to_string(index)+"].z)";
     }
 
     inline std::string sdHexPrism_glsl(int index)
     {
-        return "udBox(_pos + u_postions["+std::to_string(index)+"].xyz,u_shapeOrSize["+std::to_string(index)+"].xyz)";
+        return "sdHexPrism(_pos + u_postions["+std::to_string(index)+"].xyz,u_shapeOrSize["+std::to_string(index)+"].xy)";
     }
 
     inline std::string sdTriPrism_glsl(int index)
     {
-        return "udBox(_pos + u_postions["+std::to_string(index)+"].xyz,u_shapeOrSize["+std::to_string(index)+"].xyz)";
+        return "sdTriPrism(_pos + u_postions["+std::to_string(index)+"].xyz,u_shapeOrSize["+std::to_string(index)+"].xy)";
     }
 
     /*----  Shader Name and Path ----*/ 
 
-    const std::string shaderFunctionsPath = "#include \"../src/shaders/iq_sdf.sh\"\n";
+    const std::string shaderFunctionsPath = "#include \"../src/shaders/iq_sdf.sc\"\n";
 
     const std::string sceneShaderName = "RuntimeSDFData.sh";
 

@@ -16,26 +16,31 @@
 
 class ShaderBuilder
 {
+public:
+    ShaderBuilder(SDFTree* root);
+    ~ShaderBuilder();
+    void writeNewShader(std::string dirPath);
+    inline void setShaderPath(std::string path) {m_shaderPath = path;}
+    void createDebugScene();
+    void setNodeUniforms(SDFTree* node);
+    inline void markForRecompile() {m_shaderReCompFlag = true;}
+    bool updateScene();
 private:
+    SDFTree* m_rootPtr;
     bgfx::UniformHandle m_u_postions;
     bgfx::UniformHandle m_u_shapeOrSize;
+    bgfx::UniformHandle m_u_smoothValue;
 
     std::vector<float> m_postionVec;
     std::vector<float> m_shapeOrSizeVec;
-
-    std::vector<SDFTree*> m_sdVec; 
+    std::vector<float> m_smoothValueVec;
 
     std::string m_shaderPath;
-public:
-    ShaderBuilder(/* args */);
-    ~ShaderBuilder();
-    void writeNewShader(std::string dirPath,SDFTree &scene);
-    inline void setShaderPath(std::string path) {m_shaderPath = path;}
-    void createDebugScene(SDFTree &scene);
-    void setUniforms();
-private:
+    bool m_shaderReCompFlag = false;
+
     void compileShader();
-    void createUniform(SDFTree *scene);
+    void setUniforms();
+    void createUniform();
 };
 
 #endif // SHADERBUILDER

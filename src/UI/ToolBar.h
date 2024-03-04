@@ -1,12 +1,16 @@
 #pragma once 
+#include "imgui/imgui.h"
+#include "../SDFTree.h"
+#include "../ShaderBuilder.h"
+#include "Panel.h"
 #include <string>
 #include <vector>
-#include "imgui/imgui.h"
 
-class ToolBar
+class ToolBar: public Panel
 {
 private:
-    /* data */
+    float m_percentWidth = 0.1f;
+    float m_percentHeight = 0.5f;
     const std::vector<const std::string> m_sdButtonTitleName = 
     {
         "Sphere",
@@ -20,9 +24,14 @@ private:
         "HexPrism",
         "TriPrism"
     };
+    OperationNode* m_selectOpp = nullptr;
+    ShaderBuilder* m_shaderPtr = nullptr;
 
 public:
     ToolBar(/* args */);
     ~ToolBar();
     void OnImGuiRender();
+    void setSelectedNode(SDFTree* node);
+    bgfx::TextureHandle m_sdfIcons[7];
+    inline void setShader(ShaderBuilder* shader) {m_shaderPtr = shader;}
 };

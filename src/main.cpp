@@ -9,8 +9,10 @@
 #include "entry/cmd.h"
 #include "viewPortCamera.h"
 #include "ShaderBuilder.h"
+#include "UI/Panel.h"
 #include "UI/ToolBar.h"
 #include "UI/TreeView.h"
+#include "UI/NodeProperties.h"
 #include "SDFTree.h"
 
 namespace
@@ -120,7 +122,6 @@ namespace
 		ExampleRaymarch(const char *_name, const char *_description, const char *_url)
 			: entry::AppI(_name, _description, _url)
 		{
-
 		}
 
 		void init(int32_t _argc, const char *const *_argv, uint32_t _width, uint32_t _height) override
@@ -143,9 +144,18 @@ namespace
 			init.resolution.reset = m_reset;
 			bgfx::init(init);
 
-			shaderBuilder.createDebugScene(scence);
+			Panel::m_screenWidth = m_width;
+			Panel::m_screenHeight = m_height;
+			
+			shaderBuilder->createDebugScene();
+			nodeProperties.setShader(shaderBuilder);
+			toolBar.setShader(shaderBuilder);
 			// Enable debug text.
 			bgfx::setDebug(m_debug);
+
+			m_mouseState.m_mx = 643;
+			m_mouseState.m_my = 361;
+			m_mouseState.m_mz = 0;
 
 			// Set view 0 clear state.
 			bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x303030ff, 1.0f, 0);
@@ -155,26 +165,25 @@ namespace
 
 			u_mtx = bgfx::createUniform("u_mtx", bgfx::UniformType::Mat4);
 			u_lightDirTime = bgfx::createUniform("u_lightDirTime", bgfx::UniformType::Vec4);
-			u_size = bgfx::createUniform("u_size", bgfx::UniformType::Vec4);
+			// u_size = bgfx::createUniform("u_size", bgfx::UniformType::Vec4);
 			// Create program from shaders.
 
 			u_params_test = bgfx::createUniform("u_params_test", bgfx::UniformType::Vec4, 6);
-			bgfx::setUniform(u_params_test,test_buffer,6);
+			bgfx::setUniform(u_params_test, test_buffer, 6);
 
 			bgfx::UniformInfo test_info;
 
-			bgfx::getUniformInfo(u_params_test,test_info);
-
+			bgfx::getUniformInfo(u_params_test, test_info);
 
 			m_program = loadProgram("vs_raymarching", "fs_raymarching");
 
 			m_timeOffset = bx::getHPCounter();
 
 			ViewPortCamera::cameraCreate();
-
-			ViewPortCamera::cameraSetPosition({0.0f, 2.0f, -20.0f});
+			ViewPortCamera::cameraSetPosition({-9.2916f, -6.87753f, -9.2916f});
 
 			imguiCreate();
+
 		}
 
 		int shutdown() override
@@ -192,7 +201,7 @@ namespace
 			// Shutdown bgfx.
 			bgfx::shutdown();
 
-			delete(treeView);
+			delete (treeView);
 
 			return 0;
 		}
@@ -212,12 +221,19 @@ namespace
 				imguiBeginFrame(m_mouseState.m_mx, m_mouseState.m_my, (m_mouseState.m_buttons[entry::MouseButton::Left] ? IMGUI_MBUT_LEFT : 0) | (m_mouseState.m_buttons[entry::MouseButton::Right] ? IMGUI_MBUT_RIGHT : 0) | (m_mouseState.m_buttons[entry::MouseButton::Middle] ? IMGUI_MBUT_MIDDLE : 0), m_mouseState.m_mz, uint16_t(m_width), uint16_t(m_height));
 
 				showExampleDialog(this);
-				ImGui::ShowDemoWindow();
+				// ImGui::ShowDemoWindow();
 
-				// UI 
+				Panel::m_screenWidth = m_width;
+				Panel::m_screenHeight = m_height;
 
-				toolBar.OnImGuiRender();
+				// UI
 				treeView->OnImGuiRender();
+
+				toolBar.setSelectedNode(treeView->getSelectedNode());
+				toolBar.OnImGuiRender();
+
+				nodeProperties.setSelected(treeView->getSelectedNode());
+				nodeProperties.OnImGuiRender();
 
 				imguiEndFrame();
 				// Set view 0 default viewport.
@@ -229,9 +245,6 @@ namespace
 				// This dummy draw call is here to make sure that view 0 is cleared
 				// if no other draw calls are submitted to viewZ 0.
 				bgfx::touch(0);
-
-				// const bx::Vec3 at  = { 0.0f, 0.0f,   0.0f };
-				// const bx::Vec3 eye = { 0.0f, 0.0f, -15.0f };
 
 				// float view[16];
 				float proj[16];
@@ -257,28 +270,30 @@ namespace
 
 				bx::mtxMul(vp, m_viewMtx, proj);
 
-				float mtx[16];
-				bx::mtxRotateXY(mtx, time, time * 0.37f);
+				// float mtx[16];
+				// bx::mtxRotateXY(mtx, time, time * 0.37f);
 
-				float mtxInv[16];
-				bx::mtxInverse(mtxInv, mtx);
+				// float mtxInv[16];
+				// bx::mtxInverse(mtxInv, mtx);
 				float lightDirTime[4];
 				const bx::Vec3 lightDirModelN = bx::normalize(bx::Vec3{-0.4f, -0.5f, -1.0f});
-				bx::store(lightDirTime, bx::mul(lightDirModelN, mtxInv));
-				lightDirTime[3] = time;
+				bx::store(lightDirTime, lightDirModelN);
+				lightDirTime[3] = 1.0f;
 				bgfx::setUniform(u_lightDirTime, lightDirTime);
-				bgfx::setUniform(u_params_test,test_buffer,6);
+				bgfx::setUniform(u_params_test, test_buffer, 6);
 
-				float mvp[16];
-				bx::mtxMul(mvp, mtx, vp);
+				// float mvp[16];
+				// bx::mtxMul(mvp, mtx, vp);
 
 				float invMvp[16];
-				bx::mtxInverse(invMvp, mvp);
+				bx::mtxInverse(invMvp, vp);
 				bgfx::setUniform(u_mtx, invMvp);
-				shaderBuilder.setUniforms();
+				if (shaderBuilder->updateScene())
+				{
+					m_program = loadProgram("vs_raymarching", "fs_raymarching");
+				}
 
-
-				ViewPortCamera::cameraUpdate(deltaTime, m_mouseState, ImGui::MouseOverArea());
+				// ViewPortCamera::cameraUpdate(deltaTime, m_mouseState, ImGui::MouseOverArea());
 
 				renderScreenSpaceQuad(1, m_program, 0.0f, 0.0f, 1280.0f, 720.0f);
 
@@ -313,13 +328,14 @@ namespace
 		bgfx::UniformHandle u_lightDirTime;
 		bgfx::ProgramHandle m_program;
 		bgfx::UniformHandle u_params_test;
-		float test_buffer [6*4];
-		ShaderBuilder shaderBuilder;
+		float test_buffer[6 * 4];
 		SDFTree scence;
+		ShaderBuilder *shaderBuilder = new ShaderBuilder(&scence);
 
 		// UI
 		ToolBar toolBar;
 		TreeView *treeView = new TreeView(&scence);
+		NodeProperties nodeProperties;
 	};
 
 } // namespace

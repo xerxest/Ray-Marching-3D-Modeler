@@ -39,6 +39,9 @@ void TreeView::displayChild(SDFTree* node)
 
 void TreeView::OnImGuiRender()
 {
+    ImGui::SetNextWindowPos(ImVec2(m_percentWidth * m_screenWidth,m_percentHeight * m_screenHeight), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Tree View");
+    ImGui::SetWindowSize(ImVec2(400, 400));
     static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
     static bool align_label_with_current_x_position = false;
     static bool test_drag_and_drop = false;
@@ -58,4 +61,11 @@ void TreeView::OnImGuiRender()
 
     if (align_label_with_current_x_position)
         ImGui::Indent(ImGui::GetTreeNodeToLabelSpacing());
+
+    ImGui::End();
+}
+
+SDFTree* TreeView::getSelectedNode()
+{
+    return m_selectedNode;
 }

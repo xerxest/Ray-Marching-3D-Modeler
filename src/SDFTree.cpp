@@ -38,17 +38,9 @@ std::string SDFNode::compileToGlsl() const
     case ShaderConfig::sdTorus:
         return ShaderConfig::sdTorus_glsl(m_bufferIndex);
         break;
-
-    case ShaderConfig::sdCylinder:
-        return ShaderConfig::sdCylinder_glsl(m_bufferIndex);
-        break;
     
     case ShaderConfig::sdCone:
         return ShaderConfig::sdCone_glsl(m_bufferIndex);
-        break;
-    
-    case ShaderConfig::sdPlane:
-        return ShaderConfig::sdPlane_glsl(m_bufferIndex);
         break;
 
     case ShaderConfig::sdHexPrism:
@@ -68,29 +60,58 @@ std::string SDFNode::compileToGlsl() const
 }
 
 
+std::string OperationNode::wrapAllChildrenWithOpp(std::string (*func)(std::string,std::string)) const
+{
+    std::string glsl = "";
+		for (size_t i = 0; i < childCount(); ++i)
+		{
+			std::string childGlsl = child(i)->compileToGlsl();
+            if(childGlsl == "") childGlsl = "0";
+			glsl = i == 0 ? childGlsl : func(glsl,childGlsl);
+		}
+    return glsl;
+}
+
+std::string OperationNode::wrapAllChildrenWithSmoothOpp(std::string (*func)(std::string,std::string,int)) const
+{
+    std::string glsl = "";
+		for (size_t i = 0; i < childCount(); ++i)
+		{
+			std::string childGlsl = child(i)->compileToGlsl();
+            if(childGlsl == "") childGlsl = "0";
+			glsl = i == 0 ? childGlsl : func(glsl,childGlsl,m_smoothBufferIndex);
+		}
+    return glsl;
+}
+
 std::string OperationNode::compileToGlsl() const
 {   
-    std::string leftChild = child(0)->compileToGlsl();
-    std::string rightChild = child(1)->compileToGlsl();
-
-    // TODO for loop
-
     switch (m_opp)
     {
     case ShaderConfig::opUnion:
-        return ShaderConfig::opUnion_glsl(leftChild,rightChild);
+        return wrapAllChildrenWithOpp(ShaderConfig::opUnion_glsl);
         break;
     case ShaderConfig::opSubtract:
-        return ShaderConfig::opSubtract_glsl(leftChild,rightChild);
+        return wrapAllChildrenWithOpp(ShaderConfig::opSubtract_glsl);
         break;
     case ShaderConfig::opIntersect:
-        return ShaderConfig::opIntersect_glsl(leftChild,rightChild);
+        return wrapAllChildrenWithOpp(ShaderConfig::opIntersect_glsl);
+        break;
+    case ShaderConfig::opSmoothUnion:
+        return wrapAllChildrenWithSmoothOpp(ShaderConfig::opSmoothUnion_glsl);
+        break;
+    case ShaderConfig::opSmoothSubtraction:
+        return wrapAllChildrenWithSmoothOpp(ShaderConfig::opSmoothSubtraction_glsl);
+        break;
+    case ShaderConfig::opSmoothIntersection:
+        return wrapAllChildrenWithSmoothOpp(ShaderConfig::opSmoothIntersection_glsl);
         break;
     default:
         break;
     }
     return "";
 }
+
 
 SDFTree::SDFTree() : m_parent(nullptr), m_bufferIndex(0), m_numChildren(0) {}
 

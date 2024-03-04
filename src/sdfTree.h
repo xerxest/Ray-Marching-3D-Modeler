@@ -49,16 +49,21 @@ class SDFNode: public SDFTree
     public:
         SDFNode(): SDFTree() {setType(SDFNodeType);}
         virtual std::string compileToGlsl() const override;
-        inline const float* getPostion() const {return m_postion;}
-        inline const float* getShape() const {return m_shapeOrSize;}
+        inline ShaderConfig::SDFType getNodeType() const {return m_nodeType;}
         inline void setNodeType(ShaderConfig::SDFType node) {m_nodeType = node;}
-        inline void setPostiton(float pos1, float pos2, float pos3) { m_postion[0] = pos1; m_postion[1] = pos2; m_postion[2] = pos3; }
-        inline void setShape(float f1, float f2, float f3) { m_shapeOrSize[0] = f1; m_shapeOrSize[1] = f2; m_shapeOrSize[2] = f3; }
-        // virtual int maxChildren() const override;
+        inline void setPostiton(float pos1, float pos2, float pos3) { m_p1 = pos1; m_p2 = pos2; m_p2 = pos3; }
+        inline void setShape(float f1, float f2, float f3) { m_s1 = f1; m_s2 = f2; m_s3 = f3; }
+        
+        float m_p1;
+        float m_p2;
+        float m_p3;
+
+        float m_s1;
+        float m_s2;
+        float m_s3;
+
     private:
         ShaderConfig::SDFType  m_nodeType;
-        float m_postion[3];
-        float m_shapeOrSize[3];
         // Mostly unused
         float radius;
 
@@ -67,12 +72,16 @@ class SDFNode: public SDFTree
 class OperationNode: public SDFTree 
 {
     public:
-    	 OperationNode() : SDFTree() {setType(OperationNodeType); }
-         virtual std::string compileToGlsl() const override;
-         inline void setOperation(ShaderConfig::OperationType type) {m_opp = type;}
-         inline ShaderConfig::OperationType operation() const { return m_opp; }
-        //  virtual int maxChildren() const override;
-         ShaderConfig::OperationType m_opp;
+    	OperationNode() : SDFTree() {setType(OperationNodeType); }
+        virtual std::string compileToGlsl() const override;
+        inline void setOperation(ShaderConfig::OperationType type) {m_opp = type;}
+        inline ShaderConfig::OperationType getOperationType() const { return m_opp; }
+        float m_smoothness = 0;
+        size_t m_smoothBufferIndex;
+    private:
+        ShaderConfig::OperationType m_opp;
+        std::string wrapAllChildrenWithOpp(std::string (*func)(std::string,std::string)) const;
+        std::string wrapAllChildrenWithSmoothOpp(std::string (*func)(std::string,std::string,int)) const;
 };
 
 #endif // SDFTREE

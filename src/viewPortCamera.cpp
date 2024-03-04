@@ -106,15 +106,15 @@ struct Camera
 		m_mouseLastPan.m_mx = 0;
 		m_mouseLastPan.m_my = 0;
 		m_mouseLastPan.m_mz = 0;
-		m_eye.x  =   0.0f;
-		m_eye.y  =   0.0f;
-		m_eye.z  = -35.0f;
-		m_at.x   =   0.0f;
-		m_at.y   =   0.0f;
-		m_at.z   =  -1.0f;
-		m_up.x   =   0.0f;
-		m_up.y   =   1.0f;
-		m_up.z   =   0.0f;
+		// m_eye.x  =   0.0f;
+		// m_eye.y  =   0.0f;
+		// m_eye.z  = -35.0f;
+		// m_at.x   =   0.0f;
+		// m_at.y   =   0.0f;
+		// m_at.z   =  -1.0f;
+		// m_up.x   =   0.0f;
+		// m_up.y   =   1.0f;
+		// m_up.z   =   0.0f;
 		m_horizontalAngle = 0.01f;
 		m_verticalAngle = 0.0f;
 		m_mouseSpeed = 0.0020f;
@@ -292,9 +292,14 @@ struct Camera
 	MouseCoords m_mouseLastPan;
 	entry::MouseState m_mouseState;
 
-	bx::Vec3 m_eye = bx::InitZero;
-	bx::Vec3 m_at  = bx::InitZero;
-	bx::Vec3 m_up  = bx::InitZero;
+	bx::Vec3 m_eye = bx::Vec3(-9.2916f,-6.87753f,-9.2916f);
+	bx::Vec3 m_at  = bx::Vec3(-8.71121f,-6.42643,-8.61362);
+	bx::Vec3 m_up  = bx::Vec3(-0.303916,0.872745,-0.382037);
+
+	// bx::Vec3 m_eye = bx::InitZero;
+	// bx::Vec3 m_at  = bx::InitZero;
+	// bx::Vec3 m_up  = bx::InitZero;
+
 	float m_horizontalAngle;
 	float m_verticalAngle;
 
@@ -304,6 +309,7 @@ struct Camera
 
 	uint8_t m_keys;
 	bool m_mouseDown;
+
 };
 
 static Camera* s_camera = NULL;

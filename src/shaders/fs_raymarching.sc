@@ -109,7 +109,11 @@ void main()
 		val *= calcAmbOcc(pos, normal);
 		val = pow(val, 1.0/2.2);
 
-		gl_FragColor = vec4(val, val, val, 1.0);
+		float rVal = (240.0/255.0) * val;
+		float gVal = (90.0/255.0) * val;
+		float bVal = (60.0/255.0) * val;
+
+		gl_FragColor = vec4(rVal, gVal, bVal, 1.0);
 		gl_FragDepth = dist/maxd;
 	}
 	else
