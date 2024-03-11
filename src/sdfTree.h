@@ -32,10 +32,11 @@ public:
     inline void setType(NodeType type) {m_type = type;}
     inline void setName(std::string name) {m_name = name;}
     inline std::string getName() const {return m_name;}
+    inline SDFTree* getParent() {return m_parent;}
     u_int64_t m_bufferIndex;
 
 private:
-    SDFTree *m_parent = nullptr;
+    SDFTree* m_parent = nullptr;
     std::vector<std::shared_ptr<SDFTree>> m_children;
     u_int8_t m_numChildren;
     NodeType m_type;

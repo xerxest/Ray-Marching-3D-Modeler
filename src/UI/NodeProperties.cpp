@@ -18,12 +18,10 @@ void NodeProperties::OnImGuiRender()
 
     if(m_selectedNode == nullptr)
     {
-        std::cout << "Shit" << std::endl;
     }
 
     if(!(m_selectedNode == nullptr) && m_selectedNode->isRoot())
     {
-        std::cout << "Shit" << std::endl;
     }
 
     if (!(m_selectedNode == nullptr || m_selectedNode->isRoot()))
@@ -108,7 +106,10 @@ void NodeProperties::OnImGuiRender()
         ImGui::Dummy(ImVec2(0, 15));
         if (ImGui::Button(" Delete  "))
         {
-            
+            SDFTree* parent = m_selectedNode->getParent();
+            parent->removeChild(m_selectedNode);
+            m_selectedNode = nullptr;
+            m_shaderPtr->markForRecompile();
         }
     }
     else

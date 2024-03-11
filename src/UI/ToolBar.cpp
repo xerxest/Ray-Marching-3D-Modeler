@@ -35,7 +35,6 @@ void ToolBar::OnImGuiRender()
                 auto mem = bgfx::copy(bytes, x * y * 4);
                 m_sdfIcons[i] = bgfx::createTexture2D(x, y, false, 1, bgfx::TextureFormat::RGBA8, 0 | BGFX_TEXTURE_NONE, mem);
                 stbi_image_free(bytes);
-                std::cout << "load icons: for " << m_sdStrings[i] << std::endl;
             }
         }
         loadIcons = true;

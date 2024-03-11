@@ -9,7 +9,7 @@ TreeView::~TreeView()
 {
 }
 
-void TreeView::displayChild(SDFTree* node)
+void TreeView::displayChild(std::shared_ptr<SDFTree> node)
 {
     ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
     if (m_selectedNode == node)
@@ -22,6 +22,7 @@ void TreeView::displayChild(SDFTree* node)
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
     {
          m_newSelectedNode = node;
+
     }
 
     if(is_open)
@@ -50,7 +51,7 @@ void TreeView::OnImGuiRender()
 
     m_newSelectedNode =  nullptr;
     
-    displayChild(m_rootScene.get());
+    displayChild(m_rootScene);
 
     // Update Selected Node
     if (m_newSelectedNode != nullptr)

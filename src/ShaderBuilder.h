@@ -17,7 +17,7 @@
 class ShaderBuilder
 {
 public:
-    ShaderBuilder(SDFTree* root);
+    ShaderBuilder(std::shared_ptr<SDFTree> root);
     ~ShaderBuilder();
     void writeNewShader(std::string dirPath);
     inline void setShaderPath(std::string path) {m_shaderPath = path;}
@@ -26,7 +26,7 @@ public:
     inline void markForRecompile() {m_shaderReCompFlag = true;}
     bool updateScene();
 private:
-    SDFTree* m_rootPtr;
+    std::shared_ptr<SDFTree> m_rootPtr;
     bgfx::UniformHandle m_u_postions;
     bgfx::UniformHandle m_u_shapeOrSize;
     bgfx::UniformHandle m_u_smoothValue;

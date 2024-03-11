@@ -14,6 +14,7 @@ std::string SDFTree::compileToGlsl() const
 void SDFTree::addChild(std::shared_ptr<SDFTree> node)
 {   
     node->m_parent = this;
+    // auto newNode = std::make_shared<SDFTree>(node);
     m_children.push_back(node);
 }
 

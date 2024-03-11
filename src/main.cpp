@@ -145,6 +145,7 @@ namespace
 			init.resolution.reset = m_reset;
 			bgfx::init(init);
 
+
 			Panel::m_screenWidth = m_width;
 			Panel::m_screenHeight = m_height;
 
@@ -320,12 +321,12 @@ namespace
 		bgfx::ProgramHandle m_program;
 		bgfx::UniformHandle u_params_test;
 		float test_buffer[6 * 4];
-		SDFTree scence;
-		ShaderBuilder *shaderBuilder = new ShaderBuilder(&scence);
+		std::shared_ptr<SDFTree> scence = std::make_shared<SDFTree>();
+		ShaderBuilder *shaderBuilder = new ShaderBuilder(scence);
 
 		// UI
 		ToolBar toolBar;
-		TreeView *treeView = new TreeView(std::make_shared<SDFTree>(scence));
+		TreeView *treeView = new TreeView(scence);
 		NodeProperties nodeProperties;
 		Help helpMenu;
 	};

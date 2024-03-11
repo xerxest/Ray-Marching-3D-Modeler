@@ -118,6 +118,7 @@ void ShaderBuilder::createDebugScene()
     auto node2 = std::make_shared<SDFNode>();
 
     m_rootPtr->setName("Root");
+    std::cout << "XERG createDebugScene" << std::endl;
 
     node1->setName("Test Box");
     node1->setNodeType(ShaderConfig::SDFType::udBox);
@@ -234,7 +235,7 @@ bool ShaderBuilder::updateScene()
     }
 }
 
-ShaderBuilder::ShaderBuilder(SDFTree *root)
+ShaderBuilder::ShaderBuilder(std::shared_ptr<SDFTree> root)
 {
     m_rootPtr = root;
 }
