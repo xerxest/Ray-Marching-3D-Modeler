@@ -15,5 +15,7 @@ set(SOURCE_FILES ${CMAKE_SOURCE_DIR}/src/Main.cpp
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/bgfx.cmake) 
 add_executable(rayModel ${SOURCE_FILES} )
+file(COPY ${CMAKE_SOURCE_DIR}/src/UI/Static DESTINATION ${CMAKE_BINARY_DIR}/)
+
 
 target_link_libraries(rayModel bgfx example-common)
