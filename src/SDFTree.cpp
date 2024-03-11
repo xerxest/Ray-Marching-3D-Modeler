@@ -1,13 +1,13 @@
 #include "SDFTree.h"
 
-std::string SDFTree::compileToGlsl() const
+std::string SDFTree::compileToGlsl() const 
 {
-    if(isRoot())
+    if(childCount() > 0)
     {
-        return m_children[0]->compileToGlsl();
+        return child(0)->compileToGlsl();
     }
-
-    return "";
+    
+    return "0";
 }
 
 
@@ -73,7 +73,7 @@ std::string SDFNode::compileToGlsl() const
 
 std::string OperationNode::wrapAllChildrenWithOpp(std::string (*func)(std::string,std::string)) const
 {
-    std::string glsl = "";
+    std::string glsl = "0";
 		for (size_t i = 0; i < childCount(); ++i)
 		{
 			std::string childGlsl = child(i)->compileToGlsl();
@@ -85,7 +85,7 @@ std::string OperationNode::wrapAllChildrenWithOpp(std::string (*func)(std::strin
 
 std::string OperationNode::wrapAllChildrenWithSmoothOpp(std::string (*func)(std::string,std::string,int)) const
 {
-    std::string glsl = "";
+    std::string glsl = "0";
 		for (size_t i = 0; i < childCount(); ++i)
 		{
 			std::string childGlsl = child(i)->compileToGlsl();

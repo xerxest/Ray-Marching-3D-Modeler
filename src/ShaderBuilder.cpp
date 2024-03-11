@@ -59,7 +59,7 @@ void ShaderBuilder::createUniform()
     int bufferIndex = 0;
     int smoothBufferIndex = 0;
 
-    sdQueue.push(m_rootPtr->child(0).get());
+    sdQueue.push(m_rootPtr.get());
 
     while (!sdQueue.empty())
     {
@@ -112,19 +112,18 @@ void ShaderBuilder::createUniform()
     m_u_smoothValue = bgfx::createUniform(ShaderConfig::u_smoothValue.c_str(), bgfx::UniformType::Vec4, smoothBufferIndex);
 }
 
-void ShaderBuilder::createDebugScene()
+void ShaderBuilder::createDefaultScene()
 {
     auto node1 = std::make_shared<SDFNode>();
     auto node2 = std::make_shared<SDFNode>();
 
     m_rootPtr->setName("Root");
-    std::cout << "XERG createDebugScene" << std::endl;
 
-    node1->setName("Test Box");
+    node1->setName("Box");
     node1->setNodeType(ShaderConfig::SDFType::udBox);
 
     node2->setNodeType(ShaderConfig::SDFType::sdSphere);
-    node2->setName("Test Sphere");
+    node2->setName("Sphere");
 
     node1->setPosition(1.0f, 1.0f, 1.0f);
     node1->setShape(2.0f, 1.0f, 1.0f);

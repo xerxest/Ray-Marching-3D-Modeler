@@ -21,7 +21,7 @@ public:
     ~ShaderBuilder();
     void writeNewShader(std::string dirPath);
     inline void setShaderPath(std::string path) {m_shaderPath = path;}
-    void createDebugScene();
+    void createDefaultScene();
     void setNodeUniforms(std::shared_ptr<SDFTree> node);
     inline void markForRecompile() {m_shaderReCompFlag = true;}
     bool updateScene();

@@ -149,7 +149,7 @@ namespace
 			Panel::m_screenWidth = m_width;
 			Panel::m_screenHeight = m_height;
 
-			shaderBuilder->createDebugScene();
+			shaderBuilder->createDefaultScene();
 			nodeProperties.setShader(shaderBuilder);
 			toolBar.setShader(shaderBuilder);
 			// Enable debug text.
@@ -231,11 +231,9 @@ namespace
 				// UI
 				treeView->OnImGuiRender();
 
-				// toolBar.setSelectedNode(std::make_shared<SDFTree>(treeView->getSelectedNode()));
 				toolBar.setSelectedNode(treeView->getSelectedNode());
 				toolBar.OnImGuiRender();
 
-				// nodeProperties.setSelected(std::make_shared<SDFTree>(treeView->getSelectedNode()));
 				nodeProperties.setSelected(treeView->getSelectedNode());
 				nodeProperties.OnImGuiRender();
 
@@ -285,7 +283,7 @@ namespace
 					m_program = loadProgram("vs_raymarching", "fs_raymarching");
 				}
 
-				// ViewPortCamera::cameraUpdate(deltaTime, m_mouseState, ImGui::MouseOverArea());
+				ViewPortCamera::cameraUpdate(deltaTime, m_mouseState, ImGui::MouseOverArea());
 
 				renderScreenSpaceQuad(1, m_program, 0.0f, 0.0f, 1280.0f, 720.0f);
 

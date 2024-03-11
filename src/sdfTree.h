@@ -48,7 +48,7 @@ class SDFNode: public SDFTree
 {
     public:
         SDFNode(): SDFTree() {setType(SDFNodeType);}
-        virtual std::string compileToGlsl() const override;
+        std::string compileToGlsl() const override;
         inline ShaderConfig::SDFType getNodeType() const {return m_nodeType;}
         inline void setNodeType(ShaderConfig::SDFType node) {m_nodeType = node;}
         inline void setPosition(float pos1, float pos2, float pos3) { m_p1 = pos1; m_p2 = pos2; m_p2 = pos3; }
