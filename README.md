@@ -20,7 +20,8 @@ git clone --recurse-submodules https://github.com/xerxest/Ray-Marching-3D-Modele
 
  cd into cloned repo.
 
-```  
+```
+mkdir build  
 cd build/
 cmake .. 
 ./rayModel
